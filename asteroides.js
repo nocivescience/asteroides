@@ -10,6 +10,14 @@ const ship={
     a:Math.PI/2,
     vx:4,
     vy:4,
+    canShoot:true,
+}
+const laser={
+    x:ship.x,
+    y:ship.y,
+    r:5,
+    vx:Math.cos(ship.a)*10,
+    vy:Math.sin(ship.a)*10,
 }
 function newAsteroid(x,y,r,a,color){
     var lvlMult = 3+Math.floor(Math.random()*10);
@@ -60,13 +68,19 @@ function rotateShip(event){
             break;
     }
 }
+function laserKey(event){
+    if(event.key==='k'){
+        laser.x = ship.x;
+        laser.y = ship.y;
+        laser.a = ship.a;
+    }
+}
 function moveAsteroids(roids){
     for(var i=0;i<roids.length;i++){
         drawAsteroid(roids[i]);
         roids[i].x += roids[i].vx;
         roids[i].y += roids[i].vy;
         if(i%2===0){
-            console.log(i)
             roids[i].a += .05*Math.random();
         }else{
             roids[i].a -= .05*Math.random();
@@ -114,13 +128,27 @@ function moveShip(){
         ship.y = 0;
     }
 }
+function drawLaser(){
+    ctx.beginPath();
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'white';
+    ctx.moveTo(laser.x,laser.y);
+    laser.x += laser.vx;
+    laser.y += laser.vy;
+    ctx.lineTo(laser.x,laser.y);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+};
 const roids = createAsteroidBelt();
 function update(){
     ctx.clearRect(0,0,gameEl.width,gameEl.height);
     moveAsteroids(roids);
     moveShip();
+    drawLaser();
     roids.forEach(drawAsteroid);
     requestAnimationFrame(update);
 }
 update();
 window.addEventListener('keydown',rotateShip);
+window.addEventListener('keydown',laserKey);
