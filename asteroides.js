@@ -3,6 +3,14 @@ const ctx = gameEl.getContext('2d');
 gameEl.width = window.innerWidth;
 gameEl.height = window.innerHeight;
 const asteroidColors = ['#F00','#0F0','#00F','#FF0','#0FF','#F0F'];
+const ship={
+    x:gameEl.width/2,
+    y:gameEl.height/2,
+    r:22,
+    a:Math.PI/2,
+    vx:4,
+    vy:4,
+}
 function newAsteroid(x,y,r,color){
     var lvlMult = 3+Math.floor(Math.random()*10);
     var roid = {
@@ -61,17 +69,10 @@ function moveAsteroids(roids){
     }
 }
 function drawShip(){
-    ship={
-        x:gameEl.width/2,
-        y:gameEl.height/2,
-        r:10,
-        a:Math.PI/2,
-        vx:5,
-        vy:5,
-    }
     ctx.beginPath();
     ctx.fillStyle = 'white';
     ctx.strokeStyle = 'white';
+    ctx.stroke
     ctx.moveTo(ship.x,ship.y);
     ctx.lineTo(ship.x+Math.cos(ship.a)*ship.r,ship.y+Math.sin(ship.a)*ship.r);
     ctx.lineTo(ship.x+Math.cos(ship.a+Math.PI/2)*ship.r,ship.y+Math.sin(ship.a+Math.PI/2)*ship.r);
@@ -100,8 +101,8 @@ const roids = createAsteroidBelt();
 function update(){
     ctx.clearRect(0,0,gameEl.width,gameEl.height);
     moveAsteroids(roids);
-    roids.forEach(drawAsteroid);
     moveShip();
+    roids.forEach(drawAsteroid);
     requestAnimationFrame(update);
 }
 update();
