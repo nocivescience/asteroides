@@ -11,12 +11,13 @@ const ship={
     vx:4,
     vy:4,
 }
-function newAsteroid(x,y,r,color){
+function newAsteroid(x,y,r,a,color){
     var lvlMult = 3+Math.floor(Math.random()*10);
     var roid = {
         x,
         y,
         r,
+        a,
         color,
         vx: Math.random()<.5?-1:1,
         vy: Math.random()<.5?-1:1,
@@ -49,11 +50,27 @@ function drawAsteroid(roid){
     ctx.stroke();
     ctx.fill();
 }
+function rotateShip(event){
+    switch(event.key){
+        case 'a':
+            ship.a-=.1;
+            break;
+        case 'd':
+            ship.a+=.1;
+            break;
+    }
+}
 function moveAsteroids(roids){
     for(var i=0;i<roids.length;i++){
         drawAsteroid(roids[i]);
         roids[i].x += roids[i].vx;
         roids[i].y += roids[i].vy;
+        if(i%2===0){
+            console.log(i)
+            roids[i].a += .05*Math.random();
+        }else{
+            roids[i].a -= .05*Math.random();
+        }
         if(roids[i].x<0){
             roids[i].x = gameEl.width;
         }
@@ -106,3 +123,4 @@ function update(){
     requestAnimationFrame(update);
 }
 update();
+window.addEventListener('keydown',rotateShip);
