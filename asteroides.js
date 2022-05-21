@@ -4,16 +4,20 @@ gameEl.width = window.innerWidth;
 gameEl.height = window.innerHeight;
 const asteroidColors = ['#F00','#0F0','#00F','#FF0','#0FF','#F0F'];
 const laserMax=12;
+const roids = createAsteroidBelt();
+// atributos de la nave
 const ship={
     x:gameEl.width/2,
     y:gameEl.height/2,
     r:22,
-    a:Math.PI/2,
+    a:Math.PI/2*3,
     vx:4,
     vy:4,
     canShoot:true,
     lasers:[],
 }
+
+// atributos de los lasers
 const laser={
     x:ship.x,
     y:ship.y,
@@ -21,6 +25,8 @@ const laser={
     vx:Math.cos(ship.a)*10,
     vy:Math.sin(ship.a)*10,
 }
+
+//creando un nuevo asteroide
 function newAsteroid(x,y,r,a,color){
     var lvlMult = 3+Math.floor(Math.random()*10);
     var roid = {
@@ -40,6 +46,8 @@ function newAsteroid(x,y,r,a,color){
     }
     return roid;
 }
+
+//creando un cinturon de asteroides
 function createAsteroidBelt(){
     var roids = [];
     for(var i=0;i<10;i++){
@@ -47,6 +55,8 @@ function createAsteroidBelt(){
     }
     return roids;
 }
+
+//pintando los asteroides
 function drawAsteroid(roid){
     ctx.beginPath();
     ctx.moveTo(roid.x+Math.cos(roid.a)*roid.r,roid.y+Math.sin(roid.a)*roid.r);
@@ -60,16 +70,8 @@ function drawAsteroid(roid){
     ctx.stroke();
     ctx.fill();
 }
-function rotateShip(event){
-    switch(event.key){
-        case 'a':
-            ship.a-=.1;
-            break;
-        case 'd':
-            ship.a+=.1;
-            break;
-    }
-}
+
+//dandlo movimiento a los asteroides
 function moveAsteroids(roids){
     for(var i=0;i<roids.length;i++){
         drawAsteroid(roids[i]);
@@ -94,6 +96,8 @@ function moveAsteroids(roids){
         }
     }
 }
+
+//pintando la nave
 function drawShip(){
     ctx.beginPath();
     ctx.fillStyle = 'white';
@@ -106,23 +110,20 @@ function drawShip(){
     ctx.stroke();
     ctx.fill();
 }
-function moveShip(){
-    drawShip();
-    ship.x += ship.vx;
-    ship.y += ship.vy;
-    if(ship.x<0){
-        ship.x = gameEl.width;
-    }
-    if(ship.x>gameEl.width){
-        ship.x = 0;
-    }
-    if(ship.y<0){
-        ship.y = gameEl.height;
-    }
-    if(ship.y>gameEl.height){
-        ship.y = 0;
+
+//proveyendo de rotacion a mi nave
+function rotateShip(event){
+    switch(event.key){
+        case 'a':
+            ship.a-=.1;
+            break;
+        case 'd':
+            ship.a+=.1;
+            break;
     }
 }
+
+//propiedades para los lasers 
 function laserShoot(){
     if(ship.canShoot&&ship.lasers.length<laserMax){
         ship.lasers.push({
@@ -137,6 +138,10 @@ function laserShoot(){
     }
     ship.canShoot = false;
 }
+
+//los lasers
+
+//caracteristicas de disparo de los lasers
 function shootLaser(){
     if(ship.canShoot&&ship.lasers.length<laserMax){
         ship.lasers.push({
@@ -151,43 +156,54 @@ function shootLaser(){
     }
     ship.canShoot = false;
 }
-function moveLasers(){
-    for(var i=0;i<ship.lasers.length;i++){
-        var laser = ship.lasers[i];
-        laser.x += laser.vx;
-        laser.y += laser.vy;
-        laser.dist += Math.sqrt(laser.vx*laser.vx+laser.vy*laser.vy);
-        if(laser.dist>gameEl.width){
-            ship.lasers.splice(i,1);
-        }
-    }
-}
-function drawLaser(){
+
+//drawing los lasers
+function drawLaser(laser){
     ctx.beginPath();
-    ctx.moveTo(laser.x,laser.y);
-    ctx.lineTo(laser.x+laser.vx,laser.y+laser.vy);
-    ctx.rotate(laser.a);
     ctx.strokeStyle = 'white';
+    ctx.moveTo(laser.x,laser.y);
+    ctx.arc(laser.x,laser.y,laser.r*Math.random(),0,Math.PI*2);
     ctx.stroke();
 }
-function moveLaser(){
-    for(var i=0;i<ship.lasers.length;i++){
-        drawLaser();
-        ship.lasers[i].x += ship.lasers[i].vx;
-        ship.lasers[i].y += ship.lasers[i].vy;
-        ship.lasers[i].dist += Math.sqrt(Math.pow(ship.lasers[i].vx,2)+Math.pow(ship.lasers[i].vy,2));
-        if(ship.lasers[i].dist>laserMax){
-            ship.lasers.splice(i,1);
+
+//movimiento de los lasers
+function moveLaser(laser){
+    for(var i=0;i<laser.length;i++){
+        if(laser[i].dist>laserDist){
+            laser.splice(i,1);
+            i--;
+            continue;
         }
-    }
+        if(ship.lasers[i].explodeTime>0){
+            ship.lasers[i].explodeTime--;
+            if(ship.lasers[i].explodeTime===0){
+                ship.lasers.splice(i,1);
+                i--;
+            }
+        }else{
+            ship.lasers[i].x += ship.lasers[i].vx;
+            ship.lasers[i].y += ship.lasers[i].vy;
+        }
+    }   
 }
-const roids = createAsteroidBelt();
+
+// activando la escena
 function update(){
     ctx.clearRect(0,0,gameEl.width,gameEl.height);
     moveAsteroids(roids);
-    moveShip();
+    drawShip();
+    drawLaser(laser);
+    moveLaser(laser);
     roids.forEach(drawAsteroid);
     requestAnimationFrame(update);
 }
 update();
+
+//control de la escena
 window.addEventListener('keydown',rotateShip);
+window.addEventListener('keydown',(e)=>{
+    if(e.key==='k'){
+        shootLaser();
+        console.log(ship.lasers);
+    }
+});
