@@ -17,15 +17,6 @@ const ship={
     lasers:[],
 }
 
-// atributos de los lasers
-const laser={
-    x:ship.x,
-    y:ship.y,
-    r:5,
-    vx:Math.cos(ship.a)*10,
-    vy:Math.sin(ship.a)*10,
-}
-
 //creando un nuevo asteroide
 function newAsteroid(x,y,r,a,color){
     var lvlMult = 3+Math.floor(Math.random()*10);
@@ -71,7 +62,7 @@ function drawAsteroid(roid){
     ctx.fill();
 }
 
-//dandlo movimiento a los asteroides
+//dando movimiento a los asteroides
 function moveAsteroids(roids){
     for(var i=0;i<roids.length;i++){
         drawAsteroid(roids[i]);
@@ -124,32 +115,13 @@ function rotateShip(event){
 }
 
 //propiedades para los lasers 
-function laserShoot(){
-    if(ship.canShoot&&ship.lasers.length<laserMax){
-        ship.lasers.push({
-            x:ship.x,
-            y:ship.y,
-            a:ship.a,
-            vx:Math.cos(ship.a)*10,
-            vy:Math.sin(ship.a)*10,
-            dist:0,
-            explodeTime:0,
-        });
-    }
-    ship.canShoot = false;
-}
-
-//los lasers
-
-//caracteristicas de disparo de los lasers
 function shootLaser(){
     if(ship.canShoot&&ship.lasers.length<laserMax){
         ship.lasers.push({
-            x:ship.x,
-            y:ship.y,
-            a:ship.a,
-            vx:Math.cos(ship.a)*10,
-            vy:Math.sin(ship.a)*10,
+            x:ship.x+4/3*ship.r*Math.cos(ship.a),
+            y:ship.y-4/3*ship.r*Math.sin(ship.a),
+            vx:Math.cos(ship.a)/10,
+            vy:-Math.sin(ship.a)/10,
             dist:0,
             explodeTime:0,
         });
@@ -158,33 +130,32 @@ function shootLaser(){
 }
 
 //drawing los lasers
-function drawLaser(laser){
-    ctx.beginPath();
-    ctx.strokeStyle = 'white';
-    ctx.moveTo(laser.x,laser.y);
-    ctx.arc(laser.x,laser.y,laser.r*Math.random(),0,Math.PI*2);
-    ctx.stroke();
+function drawLaser(){
+    for(let i=0;i<ship.lasers.length;i++){
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(ship.lasers[i].x,ship.lasers[i].y);
+        ctx.lineTo(
+            ship.lasers[i].x+ship.lasers[i].r*10*Math.cos(ship.lasers[i].a+Math.PI+Math
+                .PI/4),ship.lasers[i].y+ship.lasers[i].r*10*Math.sin(ship.lasers[i].a+Math.PI+Math.PI/4)
+        );
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
 }
 
 //movimiento de los lasers
-function moveLaser(laser){
-    for(var i=0;i<laser.length;i++){
-        if(laser[i].dist>laserDist){
-            laser.splice(i,1);
-            i--;
-            continue;
-        }
-        if(ship.lasers[i].explodeTime>0){
-            ship.lasers[i].explodeTime--;
-            if(ship.lasers[i].explodeTime===0){
-                ship.lasers.splice(i,1);
-                i--;
-            }
-        }else{
-            ship.lasers[i].x += ship.lasers[i].vx;
-            ship.lasers[i].y += ship.lasers[i].vy;
-        }
-    }   
+
+function moveLaser(){
+    drawLaser();
+    for(var i=0;i<ship.lasers.length;i++){
+        var laser = ship.lasers[i];
+        ship.lasers[i].x += laser.vx;
+        ship.lasers[i].y += laser.vy;
+        laser.dist += Math.sqrt(laser.vx*laser.vx+laser.vy*laser.vy);
+    }
 }
 
 // activando la escena
@@ -192,8 +163,7 @@ function update(){
     ctx.clearRect(0,0,gameEl.width,gameEl.height);
     moveAsteroids(roids);
     drawShip();
-    drawLaser(laser);
-    moveLaser(laser);
+    moveLaser();
     roids.forEach(drawAsteroid);
     requestAnimationFrame(update);
 }
@@ -201,7 +171,7 @@ update();
 
 //control de la escena
 window.addEventListener('keydown',rotateShip);
-window.addEventListener('keydown',(e)=>{
+window.addEventListener('keydown',function(e){
     if(e.key==='k'){
         shootLaser();
         console.log(ship.lasers);
