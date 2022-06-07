@@ -30,13 +30,14 @@ function drawShip() {
     ctx.restore();
 }
 function shootLaser() {
-    if(ship.canShoot&&ship.lasers.length < 10) {
+    if(ship.canShoot&&ship.lasers.length < 100) {
         ship.lasers.push({
-            x: ship.x,
+            x: ship.x+30,
             y: ship.y,
             dx: 0,
             dy: -5,
             color: 'white',
+            dist:0,
         });
     }
     ship.canShoot = false;
@@ -86,6 +87,9 @@ document.addEventListener('keyup', (e) => {
             break;
         case 'd':
             ship.dx = 0;
+            break;
+        case 'l':
+            ship.canShoot = false;
             break;
     }
 })
